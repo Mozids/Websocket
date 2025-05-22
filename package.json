@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "redux-persist": "^6.0.0",
+    "sequelize-cli": "^6.6.3"
+  }
+}
