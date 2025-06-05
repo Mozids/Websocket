@@ -1,17 +1,46 @@
-// import { useDispatch, useSelector } from "react-redux"
-// import { useEffect } from "react"
-// import { fetchProfile } from "../redux/action/authAction"
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef, useState } from "react";
+import { fetchProfile } from "../redux/action/authAction";
 import Header from "../components/header";
-import { FiMessageCircle, FiRepeat } from "react-icons/fi";
-import { FaPaperPlane, FaRegHeart } from "react-icons/fa";
-import { HiOutlineDotsHorizontal } from "react-icons/hi";
-import Card from "../components/Card"
+import Card from "../components/Card";
+import { fetchPosting, storePosting } from "../redux/action/postAction";
+
+const WEBSOCKET_URL = "ws://127.0.0.11:3001";
 
 const Home = () => {
-  // const profile = useSelector(root => root?.auth)
-  // const dispatch = useDispatch()
+  const profile = useSelector((root) => root?.auth);
+  const posting = useSelector((root) => root?.post);
+  const dispatch = useDispatch();
 
-  // useEffect(() => dispatch(fetchProfile(profile?.token)) ,)
+  useEffect(() => {
+    dispatch(fetchProfile(profile?.token));
+    dispatch(fetchPosting(profile?.token));
+    const socket = new WebSocket(WEBSOCKET_URL);
+
+    socket.onopen = () => console.log(`CONNECT TO SERVER`);
+    socket.onmessage = (event) => {
+      console.log(`ON MESSAGE: ${JSON.stringify(event)}`);
+    };
+    socket.onerror = (event) => console.log(`ON ERR: ${JSON.stringify(event)}`);
+    socket.onclose = (event) =>
+      console.log(`ON CLOSE: ${JSON.stringify(event)}`);
+  }, [dispatch, profile?.token]);
+
+  const [content, setContent] = useState("");
+
+  const handleAdd = () => {
+    if (content.trim() === "") return;
+    dispatch(
+      storePosting(profile?.token, {
+        content_text: content,
+      })
+    );
+    setContent("");
+    // Optionally fetch posts again after posting
+    setTimeout(() => {
+      dispatch(fetchPosting(profile?.token));
+    }, 300);
+  };
 
   return (
     <>
@@ -27,25 +56,37 @@ const Home = () => {
                 <img src="" alt="" />
               </div>
               <input
-                className="pl-5 outline-none bg-[#1A1A1A] text-white"
+                className="pl-5 outline-none bg-[#1A1A1A] text-white w-[550px]"
                 type="text"
                 placeholder="What new?"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
               />
             </div>
             <div className="flex items-center">
-              <button className="px-5 py-2 bg-white rounded-xl">
+              <button
+                className="px-5 py-2 bg-white rounded-xl"
+                onClick={handleAdd}
+              >
                 <span className="font-medium">Post</span>
               </button>
             </div>
           </div>
-          <Card/>
-          <Card/>
-          <Card/>
-          <Card/>
-          <Card/> 
-          <Card/> 
-          
+          <div className="overflow-hidden overflow-y-auto max-h-[800px] w-full">
+            {Array.isArray(posting?.data) &&
+              posting.data.map((item) => (
+                <Card
+                  key={item.id}
+                  username={item.user?.username}
+                  content={item.content_text}
+                />
+              ))}
+          </div>
         </div>
+        <div></div>
+        {/* <div className="absolute bottom-4 right-4 w-[540px] h-[400px] bg-[#1a1a1a] text-white flex items-center shadow-lg rounded-3xl justify-center border border-white border-opacity-10">
+          Chat
+        </div> */}
       </div>
     </>
   );

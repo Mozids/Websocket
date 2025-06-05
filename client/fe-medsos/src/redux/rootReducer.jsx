@@ -3,6 +3,7 @@ import { combineReducers } from 'redux'
 import authReducer from './reducer/authReducer'
 import { persistReducer } from 'redux-persist'
 import majorReducer from './reducer/majorReducer'
+import postReducer from './reducer/postReducer'
 
 const persistConfig = {
     key: 'root',
@@ -11,6 +12,7 @@ const persistConfig = {
 }
 
 const root = combineReducers({
+    post: postReducer,
     major: majorReducer,
     auth: authReducer
 })

@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   FormControl,
@@ -18,15 +19,20 @@ import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchMajor } from "../redux/action/majorAction";
+import { authRegister } from "../redux/action/authAction";
 
 const Register = () => {
   const { register, handleSubmit } = useForm();
-  const onSubmit = (value) => console.log(value);
+
   const major = useSelector((root) => root?.major);
+  const { auth } = useSelector(root => root);
   const dispatch = useDispatch();
 
+  console.log(auth)
   useEffect(() => dispatch(fetchMajor()), []);
-
+  
+  const onSubmit = (value) => dispatch(authRegister(value));
+  // const onSubmit = (value) => {
   return (
     <>
       <CssBaseline enableColorScheme />
@@ -36,9 +42,15 @@ const Register = () => {
             component="h1"
             variant="h4"
             sx={{ width: "100%", fontSize: "clamp(2rem, 10vw, 2.15rem)" }}
-          >
+            >
             Sign up
           </Typography>
+            
+              {
+                auth?.message !== "" && <Alert severity="success">Register success
+                {auth?.message}
+                </Alert>
+              }
           <Box
             component="form"
             onSubmit={handleSubmit(onSubmit)}
@@ -183,11 +195,11 @@ const Register = () => {
               <Select
                 id="demo-simple-select"
                 // value={age}
-                {...register("major")}
                 label="Major"
+                {...register("major")}
               >
                 {major?.data?.map((m, i) => (
-                  <MenuItem key={i} value={"PPLG"}>
+                  <MenuItem key={i} value={m?.id}>
                     {m?.name}
                   </MenuItem>
                 ))}
@@ -207,6 +219,21 @@ const Register = () => {
                 Login Here
               </Link>
             </center>
+             {
+              !!auth?.err &&
+              !!auth?.err?.errors &&
+              auth?.err?.errors?.map((e, i) => (
+                <Typography
+                  key={i}
+                  variant="body2"
+                  color="error"
+                  sx={{ textAlign: "center" }}
+                >
+                  {e?.path}
+                  {e?.msg}
+                </Typography>
+              ))
+            }
           </Box>
         </CardRegister>
       </SignInContainer>

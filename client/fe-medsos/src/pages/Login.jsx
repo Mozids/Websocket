@@ -3,8 +3,17 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { Link } from "react-router-dom";
 import { Card } from "../utils/style";
 import { SignInContainer } from "../utils/style";
-const Login = () => {
+import { useDispatch, useSelector } from "react-redux";
+import { authLogin } from "../redux/action/authAction";
+import { useForm } from "react-hook-form";
 
+const Login = () => {
+  const { register, handleSubmit } = useForm();
+  const { auth } = useSelector(root => root);
+  const dispatch = useDispatch();
+
+  const onSubmit = (value) => dispatch(authLogin(value));
+  
   return (
     <>
       <CssBaseline enableColorScheme />
@@ -19,7 +28,7 @@ const Login = () => {
           </Typography>
           <Box
             component="form"
-            // onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             noValidate
             sx={{
               display: 'flex',
@@ -29,20 +38,22 @@ const Login = () => {
             }}
           >
             <FormControl>
-                <FormLabel htmlFor="email">Email</FormLabel>
+                <FormLabel htmlFor="username">username</FormLabel>
                 <TextField
                 // error={emailError}
                 // helperText={emailErrorMessage}
-                id="email"
-                type="email"
-                name="email"
-                placeholder="your@email.com"
-                autoComplete="email"
+                id="username"
+                type="username"
+                name="username"
+                placeholder="username"
+                autoComplete="username"
                 autoFocus
                 required
                 fullWidth
                 variant="outlined"
-                // color={emailError ? 'error' : 'primary'}
+                {...register("username")}
+                // color={emailError 
+                // ? 'error' : 'primary'}
                 />
             </FormControl>
 
@@ -60,6 +71,7 @@ const Login = () => {
                 required
                 fullWidth
                 variant="outlined"
+                {...register("password")}
                 // color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
@@ -76,6 +88,21 @@ const Login = () => {
                     Register Here
                 </Link>
             </center>
+            {
+              !!auth?.err &&
+              !!auth?.err?.errors &&
+              auth?.err?.errors?.map((e, i) => (
+                <Typography
+                  key={i}
+                  variant="body2"
+                  color="error"
+                  sx={{ textAlign: "center" }}
+                >
+                  {e?.path}
+                  {e?.msg}
+                </Typography>
+              ))
+            }
         </Box> 
         </Card>
       </SignInContainer>
